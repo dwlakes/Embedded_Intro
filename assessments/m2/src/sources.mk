@@ -7,11 +7,18 @@
 # software. Alex Fosdick and the University of Colorado are not liable for any
 # misuse of this material. 
 #
-#*****************************************************************************
+#***********************************************************************
 
-# Add your Source files to this variable
-SOURCES =
-
-# Add your include paths to this variable
-INCLUDES = 
+ifeq ($(PLATFORM),MSP432)
+	SOURCES = main.c \
+		memory.c \
+		startup_msp432p401r_gcc.c \
+		system_msp432p401r.c \
+		interrupts_msp432p401r_gcc.c
+	
+	INCLUDES = -I../include/common -I../include/msp432 -I../include/CMSIS
+else ifeq ($(PLATFORM),HOST) 
+	SOURCES =  memory.c main.c
+	INCLUDES = -I../include/common
+endif
 

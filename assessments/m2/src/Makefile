@@ -24,18 +24,55 @@
 include sources.mk
 
 # Platform Overrides
-PLATFORM = 
+PLATFORM = HOST
+CFLAGS_BOTH = -Wall -Werror -g -O0 -std=c99
+CFLAGS_ARM = -mcpu=cortex-m4 -mthumb -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 --specs=nosys.specs
 
-# Architectures Specific Flags
-LINKER_FILE = 
-CPU = 
-ARCH = 
-SPECS = 
+CC = gcc
+LD = ld
+CFLAGS = $(CFLAGS_BOTH)
+CPPFLAGS = -DHOST
 
-# Compiler Flags and Defines
-CC = 
-LD = 
-LDFLAGS = 
-CFLAGS = 
-CPPFLAGs = 
+OBJS = $(SOURCES:.c=.o)
+PREPRO = $(SOURCES:.c=.i)
+ASM = $(SOURCES:.c=.asm)
+
+GCC_LDFlags = -Wl, -Map=$(TARGET).map
+
+TARGET = run
+
+%.i: %.c
+	$(CC) -E $(INCLUDES) $(CFLAGS) $(CPPFLAGS)$< -o $@ 
+
+%.asm: %.c
+	$(CC) -S $(INCLUDES) $(CFLAGS) $(CPPFLAGS)$< -o $@ 
+
+%.o: %.c 
+	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+.PHONY: build
+build: all
+
+.PHONY: all
+all: $(TARGET).out
+
+$(TARGET).out: $(OBJS)
+	$(CC) $(OBJS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(GCC_LDFlags) -o $@ 
+
+.PHONY: clean
+clean:
+	rm -rf *.o *.i *.asm
+
+# # Architectures Specific Flags
+# LINKER_FILE = ../msp432p401r.lds
+# CPU = 
+# ARCH = 
+# SPECS = 
+
+# # Compiler Flags and Defines
+# CC = 
+# LD = 
+# LDFLAGS = 
+# CFLAGS = 
+# CPPFLAGs = 
 
