@@ -61,7 +61,7 @@ $(TARGET).out: $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -rf *.o *.i *.asm
+	rm -rf *.o *.i *.asm *.map
 
 # # Architectures Specific Flags
 # LINKER_FILE = ../msp432p401r.lds
