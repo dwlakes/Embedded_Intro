@@ -27,19 +27,33 @@ include sources.mk
 PLATFORM = HOST
 CFLAGS_BOTH = -Wall -Werror -g -O0 -std=c99
 CFLAGS_ARM = -mcpu=cortex-m4 -mthumb -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 --specs=nosys.specs
-
-CC = gcc
-LD = ld
-CFLAGS = $(CFLAGS_BOTH)
-CPPFLAGS = -DHOST
-
+TARGET = c1m1
 OBJS = $(SOURCES:.c=.o)
 PREPRO = $(SOURCES:.c=.i)
 ASM = $(SOURCES:.c=.asm)
 
-GCC_LDFlags = -Wl, -Map=$(TARGET).map
+ifeq ($(PLATFORM), HOST)
+	CC = gcc
+	LD = ld
+	CPU = cortex-m4
+	ARCH = armv7e-m
+	SPECS = nosys.specs
+	CFLAGS = $(CFLAGS_BOTH)
+	CPPFLAGS = -D$(PLATFORM)
+	LDFlags = -Wl,-Map=$(TARGET).map 
 
-TARGET = run
+else ifeq ($(PLATFORM), MSP432)
+	CC = arm-none-eabi-gcc
+	CFLAGS = $(CFLAGS_BOTH) $(CFLAGS_ARM)
+	CPPFLAGS = -D$(PLATFORM)
+	LINKER_FILE = ../msp432p401r.lds
+	LDFLAGS = -Wl,-Map=$(TARGET).map -T $(LINKER_FILE)
+
+else ifeq ($(PLATFORM), Null)
+	echo Please indicate a platform
+
+endif
+
 
 %.i: %.c
 	$(CC) -E $(INCLUDES) $(CFLAGS) $(CPPFLAGS)$< -o $@ 
@@ -59,9 +73,11 @@ all: $(TARGET).out
 $(TARGET).out: $(OBJS)
 	$(CC) $(OBJS) $(INCLUDES) $(CFLAGS) $(CPPFLAGS) $(GCC_LDFlags) -o $@ 
 
+
+
 .PHONY: clean
 clean:
-	rm -rf *.o *.i *.asm *.map
+	rm -rf *.o *.i *.asm *.map *.out
 
 # # Architectures Specific Flags
 # LINKER_FILE = ../msp432p401r.lds
